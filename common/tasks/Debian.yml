@@ -1,0 +1,17 @@
+- name: upgrade all packages
+  apt:
+    name: '*'
+    state: latest
+    update_cache: yes
+  become: yes
+
+- include_tasks: set-timezone.yml
+
+- name: install system packages
+  apt:
+    name: "{{ sys_packages }}"
+    state: present
+  become: yes
+
+- include_tasks: install-vim-plugins.yml
+- include_tasks: install-dot-files.yml 

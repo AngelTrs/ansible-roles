@@ -1,0 +1,22 @@
+- name: clone dotfiles
+  git:
+    repo: "{{ dotfile_repo }}"
+    dest: ~/.dotfiles/
+    clone: yes
+    update: yes
+    version: main
+
+- name: remove original .bashrc 
+  file:
+    path: ~/.bashrc
+    state: absent
+
+- name: Make config directory
+  file:
+    path: ~/.config
+    state: directory
+
+- name: stow dotfiles for bash and vim
+  command:
+    cmd: stow bash neovim 
+    chdir: ~/.dotfiles/
