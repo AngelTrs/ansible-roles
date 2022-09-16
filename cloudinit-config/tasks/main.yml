@@ -1,0 +1,4 @@
+- name: "deploy cloudinit config file for {{ vm_name }} to {{ proxmox_host }}-proxmox"
+  copy:
+    src: "{{ proxmox_host }}-{{ vm_name }}-userconfig.yaml"
+    dest: "/var/lib/vz/snippets/"
