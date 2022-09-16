@@ -1,0 +1,9 @@
+# task requires a variable file named after the hostname, which contains a list of compose stacks to deploy
+
+- include_vars: "{{ ansible_facts['hostname'] }}.yml"
+
+- name: "deploy docker-compose file"
+  copy:
+    src: "{{ item }}/"
+    dest: "~/containers/"
+  loop: "{{ compose_stacks }}"
