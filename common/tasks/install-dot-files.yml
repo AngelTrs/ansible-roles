@@ -20,3 +20,15 @@
   command:
     cmd: stow bash neovim 
     chdir: ~/.dotfiles/
+
+- name: deploy update-dotfiles script
+  copy:
+    src: "update-dotfiles.sh"
+    dest: "~/bin/"
+    mode: 0755
+
+- name: setup cronjob
+  cron:
+    name: "update-dotfiles"
+    job: "bash ~/bin/update-dotfiles.sh"
+    special_time: daily

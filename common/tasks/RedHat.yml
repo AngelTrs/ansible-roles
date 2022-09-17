@@ -24,10 +24,9 @@
 
 - name: 'install system packages'
   yum:
-    name: {{ item }}
+    name: "{{ sys_packages }}"
     state: present
     update_cache: yes
-  with_items: {{ sys_packages }}
   become: yes
 
 - include_tasks: install-vim-plugins.yml
