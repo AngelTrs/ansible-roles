@@ -1,25 +1,33 @@
-- name: clone dotfiles
-  git:
-    repo: "{{ dotfile_repo }}"
-    dest: ~/.dotfiles/
-    clone: yes
-    update: yes
-    version: main
-
-- name: remove original .bashrc 
+- name: check for .dotfiles repo
   file:
-    path: ~/.bashrc
-    state: absent
-
-- name: Make config directory
-  file:
-    path: ~/.config
+    path: ~/.dotfiles/
     state: directory
+  register: dot_result
 
-- name: stow dotfiles for bash and vim
-  command:
-    cmd: stow bash neovim 
-    chdir: ~/.dotfiles/
+- name: init dotfiles
+  block:
+    - name: clone dotfile repo
+      git:
+        repo: "{{ dotfile_repo }}"
+        dest: ~/.dotfiles/
+        clone: yes
+        version: main
+
+    - name: remove original .bashrc file
+      file:
+        path: ~/.bashrc
+        state: absent
+
+    - name: Make config directory
+      file:
+        path: ~/.config
+        state: directory
+
+    - name: stow dotfiles for bash and vim
+      command:
+        cmd: stow bash neovim
+        chdir: ~/.dotfiles/
+  when: dot_result.changed == true
 
 - name: deploy update-dotfiles script
   copy:

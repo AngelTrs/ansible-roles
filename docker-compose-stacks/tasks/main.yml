@@ -4,6 +4,6 @@
 
 - name: "deploy docker-compose file"
   copy:
-    src: "{{ item }}/"
+    src: "{{ item }}"
     dest: "~/containers/"
   loop: "{{ compose_stacks }}"
