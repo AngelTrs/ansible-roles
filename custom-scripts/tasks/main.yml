@@ -1,0 +1,4 @@
+- name: "copy scripts to remote machine"
+  copy:
+    src: "{{ ansible_facts['hostname'] }}/"
+    dest: "~/scripts/"
