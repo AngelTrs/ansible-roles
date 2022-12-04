@@ -1,4 +1,11 @@
+- name: "check if scripts exist for this host"
+  delegate_to: localhost
+  stat:
+    path: "~/scripts/{{ ansible_facts['hostname'] }}/"
+  register: script_directory
+
 - name: "copy scripts to remote machine"
   copy:
     src: "{{ ansible_facts['hostname'] }}/"
     dest: "~/scripts/"
+  when: script_directory.stat.exists
