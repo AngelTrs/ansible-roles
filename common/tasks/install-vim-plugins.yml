@@ -1,11 +1,19 @@
 # https://github.com/junegunn/vim-plug
-- name: "create neovim autoload directory"
-  file: path="~/.config/nvim/autoload" state=directory
+- name: "check if vim-plug is already installed"
+  stat:
+    path: ~/.local/share/nvim/site/autoload/plug.vim
+  register: result
 
-- name: "download vim-plug autoload"
-  get_url:
-    url: https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-    dest: ~/.config/nvim/autoload/plug.vim
+- name: "install vim-plug"
+  block:
+    - name: "create neovim autoload directory"
+      file: path="~/.local/share/nvim/site/autoload" state=directory
 
-- name: "neovim PlugUpdate (PlugInstall || PlugUpgrade)"
+    - name: "download vim-plug"
+      get_url:
+        url: https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+        dest: ~/.local/share/nvim/site/autoload/plug.vim
+  when: not result.stat.exists
+
+- name: "install/update neovim plugins"
   command: nvim "+silent! PlugUpdate!" +qall!

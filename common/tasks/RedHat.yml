@@ -1,11 +1,11 @@
+- include_tasks: set-timezone.yml
+
 - name: upgrade all packages
   yum:
     name: '*'
     state: latest
     update_cache: yes
   become: yes
-
-- include_tasks: set-timezone.yml
 
 - name: install epel repo
   yum:
@@ -29,6 +29,5 @@
     update_cache: yes
   become: yes
 
-- include_tasks: install-vim-plugins.yml
-
 - include_tasks: install-dot-files.yml 
+- include_tasks: install-vim-plugins.yml

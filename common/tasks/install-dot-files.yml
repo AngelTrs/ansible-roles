@@ -1,10 +1,10 @@
-- name: check for .dotfiles repo
+- name: check for .dotfiles directory
   file:
     path: ~/.dotfiles/
     state: directory
   register: dot_result
 
-- name: init dotfiles
+- name: install dotfiles
   block:
     - name: clone dotfile repo
       git:
@@ -23,11 +23,17 @@
         path: ~/.config
         state: directory
 
-    - name: stow dotfiles for bash and vim
+    - name: stow dotfiles for bash, neovim, and the update script.
       command:
         cmd: stow bash neovim update-dotfiles
         chdir: ~/.dotfiles/
   when: dot_result.changed == true
+
+- name: restow dotfiles incase of changes
+  command:
+    cmd: stow -R bash neovim update-dotfiles
+    chdir: ~/.dotfiles/
+  when: dot_result.changed == false
 
 - name: enable update-dotfiles systemd timer
   systemd:

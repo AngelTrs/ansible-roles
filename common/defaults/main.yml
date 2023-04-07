@@ -1,2 +1,3 @@
+timezone: UTC
 sys_packages: ['curl', 'wget', 'htop', 'tree', 'git', 'neovim', 'neofetch', 'stow']
 dotfile_repo: https://github.com/AngelTrs/.dotfiles.git
