@@ -1,0 +1,21 @@
+- name: "upload private key used for github"
+  copy:
+   src: github_rsa
+   dest: ~/.ssh/github_rsa
+   mode: 0600
+
+- name: "copy .gitconfig file"
+  template:
+    src: .gitconfig.j2
+    dest: ~/.gitconfig
+
+- name: "set ssh config to use github key"
+  blockinfile:
+    path: ~/.ssh/config
+    create: yes
+    mode: 0600
+    block: |
+      Host github.com
+           Hostname github.com
+           User git
+           IdentityFile ~/.ssh/github_rsa
