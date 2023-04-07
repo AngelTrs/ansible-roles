@@ -1,0 +1,37 @@
+- name: check for .dotfiles repo
+  file:
+    path: ~/.dotfiles/
+    state: directory
+  register: dot_result
+
+- name: init dotfiles
+  block:
+    - name: clone dotfile repo
+      git:
+        repo: "{{ dotfile_repo }}"
+        dest: ~/.dotfiles/
+        clone: yes
+        version: main
+
+    - name: remove original .bashrc file
+      file:
+        path: ~/.bashrc
+        state: absent
+
+    - name: Make config directory
+      file:
+        path: ~/.config
+        state: directory
+
+    - name: stow dotfiles for bash and vim
+      command:
+        cmd: stow bash neovim update-dotfiles
+        chdir: ~/.dotfiles/
+  when: dot_result.changed == true
+
+- name: enable update-dotfiles systemd timer
+  systemd:
+    name: update-dotfiles.timer
+    scope: user
+    enabled: true 
+    state: started
