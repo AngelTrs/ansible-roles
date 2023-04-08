@@ -35,6 +35,11 @@
     chdir: ~/.dotfiles/
   when: dot_result.changed == false
 
+- name: force systemd to reread configs
+  systemd:
+    scope: user
+    daemon_reload: true
+
 - name: enable update-dotfiles systemd timer
   systemd:
     name: update-dotfiles.timer
