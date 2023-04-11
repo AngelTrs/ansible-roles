@@ -1,0 +1,10 @@
+[Unit]
+Description=restic forget and prune
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/opt/restic/restic-helper prune
+
+[Install]
+WantedBy=default.target

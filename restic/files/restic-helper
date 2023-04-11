@@ -1,0 +1,59 @@
+#!/bin/bash
+
+###########################################################
+# dependancies:
+#   - restic
+# available commands:
+#   - list: restic snapshots
+#   - prune: restic forget && restic prune && restic check
+#   - check
+#   - run
+###########################################################
+
+RESCONFIG="/opt/restic/config"
+source ${RESCONFIG}/environment.sh
+
+if [ $# -eq 0 ]; then
+  echo "no command supplied"
+  exit 1;
+fi
+
+if [ -z "$1" ]; then set -- "NULL" $2; fi
+if [ -z "$2" ]; then set -- $1 "NULL"; fi
+
+if [ $1 == "list" ]
+then
+  restic snapshots
+elif [ $1 == "prune" ]
+then
+  restic forget --keep-last 7 --keep-monthly 6 --keep-yearly 3
+  restic prune
+  restic check
+elif [ $1 == "check" ]
+then
+  restic check
+  # restic -r $BACKARCH check
+elif [ $1 == "run" ]
+then
+  if [ $2 == "--auto" ]
+  then
+    # automated backup
+    restic backup \
+      --files-from ${RESCONFIG}/backup.files \
+      --exclude-file ${RESCONFIG}/exclude.files \
+      --tag automated
+  else
+    # manual backup
+    restic backup \
+      --files-from ${RESCONFIG}/backup.files \
+      --exclude-file ${RESCONFIG}/exclude.files
+  fi
+
+  if [ $? -eq 0 ]
+   then
+     curl ${BACKUP_HEALTHCHECK}
+     exit 0
+   else
+     exit 1
+   fi
+fi

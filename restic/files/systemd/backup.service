@@ -1,0 +1,10 @@
+[Unit]
+Description=restic backup
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/opt/restic/restic-helper run --auto
+
+[Install]
+WantedBy=default.target

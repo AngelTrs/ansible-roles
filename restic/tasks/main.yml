@@ -1,0 +1,90 @@
+- name: install restic program
+  apt:
+    name: restic
+    state: present
+    update-cache: true
+  become: true
+
+- name: check if restic-helper script is installed
+  stat:
+    path: /opt/restic/restic-helper
+  register: result
+
+- name: proceed with restic-helper installation
+  block:
+    - name: copy script
+      copy:
+        src: restic-helper
+        dest: /opt/restic/
+        mode: '744'
+
+    - name: create cache directory
+      file:
+        path: /opt/restic/cache
+        state: directory
+
+    - name: create config directory
+      file:
+        path: /opt/restic/config
+        state: directory
+
+    - name: template environment config
+      template:
+        src: environment.sh.j2
+        dest: /opt/restic/config/environment.sh
+
+    - name: template backup.files config
+      template:
+        src: backup.files.j2
+        dest: /opt/restic/config/backup.files
+
+    - name: template exclude.files config
+      template:
+        src: exclude.files.j2
+        dest: /opt/restic/config/exclude.files
+
+    - name: add ssh config
+      blockinfile:
+        path: ~/.ssh/config
+        create: true
+        mode: 0600
+        block: |
+          Host {{ restic_ssh_host }}
+               Hostname {{ restic_ssh_hostname }}
+               User {{ restic_ssh_user }}
+               Port {{ restic_ssh_port }}
+
+    - name: initialize restic repo
+      expect:
+        command: restic -r sftp:{{ restic_ssh_host }}:{{ restic_repo }} init
+        responses:
+          "enter password for new repository:": "{{ restic_pass }}"
+          "enter password again:": "{{ restic_pass }}"
+      no_log: true
+  become: true
+  when: not result.stat.exists
+
+- name: copy systemd unit files
+  copy:
+    src: systemd/
+    dest: /etc/systemd/system
+  become: true
+
+- name: force systemd to reread configs
+  systemd:
+    daemon_reload: true
+  become: true
+
+- name: enable backup.timer unit
+  systemd:
+    name: backup.timer
+    state: started
+    enabled: true
+  become: true
+
+- name: enable backup-prune.timer unit
+  systemd:
+    name: backup-prune.timer
+    state: started
+    enabled: true
+  become: true

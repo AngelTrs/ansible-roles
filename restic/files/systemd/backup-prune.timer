@@ -1,0 +1,11 @@
+[Unit]
+Description=run Restic forget and prune script monthly
+After=network.target
+
+[Timer]
+OnCalendar=*-*-01 06:00:00
+Persistent=true
+Unit=backup-prune.service
+
+[Install]
+WantedBy=timers.target

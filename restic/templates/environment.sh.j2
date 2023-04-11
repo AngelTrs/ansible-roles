@@ -1,0 +1,6 @@
+#!/bin/bash
+
+export RESTIC_REPOSITORY=sftp:{{ restic_ssh_host}}:{{ restic_repo }}
+export RESTIC_PASSWORD={{ restic_pass }}
+export RESTIC_CACHE_DIR={{ restic_cache_dir }}
+export BACKUP_HEALTHCHECK={{ restic_healthcheck }}

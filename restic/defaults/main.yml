@@ -1,0 +1,13 @@
+restic_ssh_host: "restic-host"
+restic_ssh_hostname: "111.111.111.111"
+restic_ssh_user: ubuntu
+restic_ssh_port: 22
+restic_repo: "/srv/restic/repo-name"
+restic_pass: "password-here"
+restic_cache_dir: "/var/local/restic"
+restic_healthcheck_url: "http://healthchecks.com/check-uuid"
+restic_backup_files:
+  - /dir1
+  - /dir2
+restic_exclude_files:
+  - /dir3 
