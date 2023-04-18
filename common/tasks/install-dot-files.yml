@@ -6,13 +6,6 @@
 
 - name: install dotfiles
   block:
-    - name: clone dotfile repo
-      git:
-        repo: "{{ dotfile_repo }}"
-        dest: ~/.dotfiles/
-        clone: yes
-        version: main
-
     - name: remove original .bashrc file
       file:
         path: ~/.bashrc
@@ -22,18 +15,20 @@
       file:
         path: ~/.config
         state: directory
-
-    - name: stow dotfiles for bash, neovim, and the update script.
-      command:
-        cmd: stow bash neovim update-dotfiles
-        chdir: ~/.dotfiles/
   when: dot_result.changed == true
 
-- name: restow dotfiles incase of changes
+- name: clone dotfile repo
+  git:
+    repo: "{{ dotfile_repo }}"
+    dest: ~/.dotfiles/
+    clone: yes
+    update: yes
+    version: main
+
+- name: (re)stow dotfiles for bash neovim update-dotfiles
   command:
-    cmd: stow -R bash neovim update-dotfiles
+    cmd: stow -R --no-folding bash neovim update-dotfiles
     chdir: ~/.dotfiles/
-  when: dot_result.changed == false
 
 - name: force systemd to reread configs
   systemd:

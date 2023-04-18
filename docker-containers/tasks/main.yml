@@ -1,0 +1,27 @@
+- name: clone container repo
+  git:
+    repo: https://github.com/AngelTrs/docker-containers.git
+    dest: ~/docker-containers/
+    clone: true
+    update: true
+    version: main
+
+- name: check (or create) app-data directory
+  file:
+    path: /srv/docker-containers/app-data
+    state: directory
+  become: true
+
+- name: add docker_app_data env to .profile
+  lineinfile:
+    path: ~/.profile
+    line: "export DOCKER_APP_DATA='/srv/docker-containers'"
+    state: present
+  ignore_errors: true
+
+- name: add docker_app_data env to .bash_profile
+  lineinfile:
+    path: ~/.bash_profile
+    line: "export DOCKER_APP_DATA='/srv/docker-containers'"
+    state: present
+  ignore_errors: true

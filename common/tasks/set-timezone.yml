@@ -2,3 +2,4 @@
   timezone:
     hwclock: UTC
     name: "{{ timezone }}"
+  become: true
