@@ -1,0 +1,40 @@
+- name: check for .dotfiles directory
+  file:
+    path: ~/.dotfiles/
+    state: directory
+    mode: 0755
+  register: dot_result
+
+- name: install dotfiles
+  block:
+    - name: remove original .bashrc file
+      file:
+        path: ~/.bashrc
+        state: absent
+
+    - name: Make config directory
+      file:
+        path: ~/.config
+        state: directory
+        mode: 0755
+  when: dot_result.changed == true
+
+- name: clone dotfile repo
+  git:
+    repo: "{{ dotfile_repo }}"
+    dest: ~/.dotfiles/
+    clone: true
+    update: true
+    version: main
+  notify:
+    - stow dotfiles
+
+- name: copy systemd files to location
+  copy:
+    remote_src: true
+    src: ~/.dotfiles/update-dotfiles/.config/systemd/user/
+    dest: /etc/systemd/system
+    mode: 0644
+  notify:
+    - reload systemd
+    - enable update-dotfiles

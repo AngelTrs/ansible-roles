@@ -1,0 +1,2 @@
+sys_packages: ['curl', 'wget', 'git', 'tree', 'neovim', 'tmux', 'stow']
+dotfile_repo: https://github.com/AngelTrs/.dotfiles.git

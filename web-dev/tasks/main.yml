@@ -1,0 +1,7 @@
+- name: install system packages
+  apt:
+    name: "{{ sys_packages }}"
+    state: present
+
+- include_tasks: install-dot-files.yml
+- include_tasks: install-vim-plugins.yml

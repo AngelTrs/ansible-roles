@@ -1,0 +1,14 @@
+- name: stow dotfiles
+  command:
+    cmd: stow -R --no-folding bash neovim tmux
+    chdir: ~/.dotfiles/
+
+- name: reload systemd
+  systemd:
+    daemon_reload: true
+
+- name: enable update-dotfiles
+  systemd:
+    name: update-dotfiles.timer
+    enabled: true
+    state: started
