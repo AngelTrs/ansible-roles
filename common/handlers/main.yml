@@ -1,0 +1,16 @@
+- name: stow dotfiles
+  command:
+    cmd: stow -R --no-folding bash neovim update-dotfiles
+    chdir: ~/.dotfiles/
+
+- name: reload systemd
+  systemd:
+    scope: user
+    daemon_reload: true
+
+- name: enable update-dotfiles
+  systemd:
+    name: update-dotfiles.timer
+    scope: user
+    enabled: true 
+    state: started

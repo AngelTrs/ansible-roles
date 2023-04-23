@@ -7,7 +7,7 @@
 - name: "install vim-plug"
   block:
     - name: "create neovim autoload directory"
-      file: path="~/.local/share/nvim/site/autoload" state=directory
+      file: path="~/.local/share/nvim/site/autoload" state=directory mode=0755
 
     - name: "download vim-plug"
       get_url:
@@ -16,4 +16,5 @@
   when: not result.stat.exists
 
 - name: "install/update neovim plugins"
-  command: nvim "+silent! PlugUpdate!" +qall!
+  command: nvim "+silent! PlugUpdate!" +qall! --headless
+  changed_when: false

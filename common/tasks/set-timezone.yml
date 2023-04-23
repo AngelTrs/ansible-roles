@@ -1,5 +1,0 @@
-- name: set timezone to UTC
-  timezone:
-    hwclock: UTC
-    name: "{{ timezone }}"
-  become: true

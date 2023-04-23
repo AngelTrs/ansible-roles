@@ -2,6 +2,7 @@
   file:
     path: ~/.dotfiles/
     state: directory
+    mode: 0755
   register: dot_result
 
 - name: install dotfiles
@@ -15,29 +16,17 @@
       file:
         path: ~/.config
         state: directory
+        mode: 0755
   when: dot_result.changed == true
 
 - name: clone dotfile repo
   git:
     repo: "{{ dotfile_repo }}"
     dest: ~/.dotfiles/
-    clone: yes
-    update: yes
+    clone: true
+    update: true
     version: main
-
-- name: (re)stow dotfiles for bash neovim update-dotfiles
-  command:
-    cmd: stow -R --no-folding bash neovim update-dotfiles
-    chdir: ~/.dotfiles/
-
-- name: force systemd to reread configs
-  systemd:
-    scope: user
-    daemon_reload: true
-
-- name: enable update-dotfiles systemd timer
-  systemd:
-    name: update-dotfiles.timer
-    scope: user
-    enabled: true 
-    state: started
+  notify:
+    - stow dotfiles
+    - reload systemd
+    - enable update-dotfiles

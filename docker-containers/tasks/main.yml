@@ -1,6 +1,6 @@
 - name: clone container repo
   git:
-    repo: https://github.com/AngelTrs/docker-containers.git
+    repo: "{{ container_repo }}"
     dest: ~/docker-containers/
     clone: true
     update: true
@@ -8,20 +8,23 @@
 
 - name: check (or create) app-data directory
   file:
-    path: /srv/docker-containers/app-data
+    path: "{{ app_data_dir }}"
     state: directory
+    mode: 0755
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_id }}"
   become: true
 
-- name: add docker_app_data env to .profile
+- name: add DOCKER_APP_DATA env to .profile
   lineinfile:
     path: ~/.profile
-    line: "export DOCKER_APP_DATA='/srv/docker-containers'"
+    line: "export DOCKER_APP_DATA='{{ app_data_dir }}'"
     state: present
   ignore_errors: true
 
-- name: add docker_app_data env to .bash_profile
+- name: add DOCKER_APP_DATA env to .bash_profile
   lineinfile:
     path: ~/.bash_profile
-    line: "export DOCKER_APP_DATA='/srv/docker-containers'"
+    line: "export DOCKER_APP_DATA='{{ app_data_dir }}'"
     state: present
   ignore_errors: true
