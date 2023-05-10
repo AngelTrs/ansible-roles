@@ -1,21 +1,41 @@
-- name: "upload private key used for github"
+- name: upload private key used for github
   copy:
    src: github_rsa
    dest: ~/.ssh/github_rsa
    mode: 0600
 
-- name: "copy .gitconfig file"
-  template:
-    src: .gitconfig.j2
-    dest: ~/.gitconfig
-
-- name: "set ssh config to use github key"
+- name: set ssh config to use github key
   blockinfile:
-    path: ~/.ssh/config
-    create: yes
-    mode: 0600
-    block: |
-      Host github.com
-           Hostname github.com
-           User git
-           IdentityFile ~/.ssh/github_rsa
+   path: ~/.ssh/config
+   create: true
+   mode: 0600
+   block: |
+     Host github.com
+          Hostname github.com
+          User git
+          IdentityFile ~/.ssh/github_rsa
+
+- name: check for .dotfiles directory
+  stat:
+   path: ~/.dotfiles/git/
+  register: result
+
+- name: stow git dotfiles
+  command:
+   cmd: stow -R --no-folding git
+   chdir: ~/.dotfiles/
+  when: result.stat.exists
+
+- name: need git config file
+  block:
+   - name: "create .config/git director"
+     file:
+      path: ~/.config/git/
+      state: directory
+      mode: 0755
+   - name: copy git config file
+     template:
+      src: .gitconfig.j2
+      dest: ~/.config/git/config
+      mode: 0644
+  when: not result.stat.exists
