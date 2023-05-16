@@ -1,0 +1,57 @@
+- name: add 'cd /var/www' to bash profile
+  lineinfile:
+    line: "{{ item }}"
+    path: ~/.profile
+    state: present
+  loop:
+    - "umask 0002"
+    - "cd /var/www"
+
+- name: add turnkey-compose alias
+  lineinfile:
+    line: "alias composer='turnkey-composer'"
+    path: ~/.bash_aliases_local
+    state: present
+    mode: 0644
+    create: true
+
+- name: check for www-orig directory
+  stat:
+    path: /var/www-orig
+  register: www
+
+- name: work on www folder
+  block:
+    - name: keep original www directory
+      command:
+        cmd: 'mv /var/www /var/www-orig'
+        creates: /var/www-orig
+        removes: /var/www
+    - name: clone base repo
+      git:
+        repo: "{{ baseweb_repo }}"
+        clone: true
+        dest: /var/www
+        version: main
+      notify:
+        - fix www-data
+        - fix www-data 2
+  when: not www.stat.exists
+
+- name: check apache default vhost
+  lineinfile:
+    path: /etc/apache2/sites-available/000-default.conf
+    regexp: '/var/www/html$'
+    state: absent
+  check_mode: true
+  changed_when: false
+  register: vhost
+
+- name: copy vhost file
+  copy:
+    src: apache2-000-default.conf
+    dest: /etc/apache2/sites-available/000-default.conf
+    mode: 0644
+  when: not vhost.found
+  notify:
+    - restart apache2

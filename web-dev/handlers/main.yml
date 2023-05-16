@@ -12,3 +12,18 @@
     name: update-dotfiles.timer
     enabled: true
     state: started
+
+- name: restart apache2
+  systemd:
+    name: apache2
+    state: restarted
+
+- name: fix www-data
+  file:
+    group: www-data
+    mode: 0775
+    path: /var/www
+    recurse: true
+    state: directory
+- name: fix www-data 2
+  command: "find /var/www/ -type d -exec chmod 2775 {} +"

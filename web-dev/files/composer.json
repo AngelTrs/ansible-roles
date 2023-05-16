@@ -1,0 +1,24 @@
+{
+    "name": "angeltrs/project-name-here",
+    "type": "project",
+    "license": "apache",
+    "authors": [
+        {
+            "name": "AngelTrs"
+        }
+    ],
+    "require": {
+        "picocss/pico": "^1.5"
+    },
+    "scripts": {
+        "copyPico": [
+            "cp -r vendor/picocss/pico/css/ html/"
+        ],
+        "post-update-cmd": [
+            "@copyPico"
+        ],
+        "post-install-cmd": [
+            "@copyPico"
+        ]
+    }
+}
