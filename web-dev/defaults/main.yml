@@ -1,3 +1,4 @@
 sys_packages: ['curl', 'wget', 'git', 'tree', 'neovim', 'tmux', 'stow']
 dotfile_repo: https://github.com/AngelTrs/.dotfiles.git
 baseweb_repo: https://github.com/AngelTrs/base-php.git
+turnkey_laravel: false

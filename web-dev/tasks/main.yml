@@ -6,3 +6,6 @@
 - include_tasks: install-dot-files.yml
 - include_tasks: install-vim-plugins.yml
 - include_tasks: turnkey.yml
+  when: not turnkey_laravel
+- include_tasks: turnkey-laravel.yml
+  when: turnkey_laravel

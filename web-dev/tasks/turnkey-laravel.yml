@@ -1,0 +1,16 @@
+- name: add 'cd /var/www' to bash profile
+  lineinfile:
+    line: "{{ item }}"
+    path: ~/.profile
+    state: present
+  loop:
+    - "umask 0002"
+    - "cd /var/www/laravel"
+
+- name: add turnkey-compose alias
+  lineinfile:
+    line: "alias composer='turnkey-composer'"
+    path: ~/.bash_aliases_local
+    state: present
+    mode: 0644
+    create: true
