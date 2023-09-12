@@ -5,7 +5,16 @@
 
 - include_tasks: install-dot-files.yml
 - include_tasks: install-vim-plugins.yml
-- include_tasks: turnkey.yml
-  when: not turnkey_laravel
-- include_tasks: turnkey-laravel.yml
-  when: turnkey_laravel
+
+- name: check for laravel install
+  stat:
+    path: /var/www/laravel
+  register: turnkey_laravel
+
+- name: include turnkey-lamp tasks
+  include_tasks: turnkey.yml
+  when: not turnkey_laravel.stat.exists
+
+- name: include turnkey-laravel tasks
+  include_tasks: turnkey-laravel.yml
+  when: turnkey_laravel.stat.exists
