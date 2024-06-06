@@ -12,5 +12,5 @@
   systemd:
     name: update-dotfiles.timer
     scope: user
-    enabled: true 
+    enabled: true
     state: started

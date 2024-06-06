@@ -1,2 +1,0 @@
-container_repo: https://github.com/AngelTrs/docker-containers.git
-app_data_dir: /srv/docker-containers
