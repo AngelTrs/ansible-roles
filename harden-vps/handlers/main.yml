@@ -1,0 +1,8 @@
+- name: Restart SSHD
+  systemd:
+    name: sshd
+    enabled: true
+    state: restarted
+
+- include: nftables.yml
+- include: iptables.yml

@@ -1,0 +1,10 @@
+- name: update and upgrade Debian packages
+  apt:
+    update_cache: true
+    upgrade: "yes"
+  when: ansible_distribution == 'Debian'
+
+- name: update and upgrade RedHat packages
+  yum:
+    update_cache: true
+  when: ansible_distribution == 'RedHat'

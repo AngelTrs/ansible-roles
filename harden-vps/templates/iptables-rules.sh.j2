@@ -1,0 +1,25 @@
+#! /bin/bash
+
+iptables -A INPUT -i lo -j ACCEPT
+iptables -A INPUT -p icmp --icmp-type echo-request -m limit --limit 60/minute --limit-burst 120 -j ACCEPT
+iptables -A INPUT -p icmp --icmp-type echo-request -m limit --limit 1/minute --limit-burst 2 -j LOG
+iptables -A INPUT -p icmp --icmp-type echo-request -j DROP
+iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+iptables -A INPUT -p tcp --dport {{ hvps_ssh_port }} -j ACCEPT
+iptables -A INPUT -j DROP
+
+FILENAME="${HOME}/.delete_only_if_iptables_approved"
+
+touch $FILENAME
+
+echo "you have 2 minutes to check connectivity and remove failsafe file."
+sleep 2m
+
+if [ ! -f $FILENAME ]
+then
+    exit;
+else
+    echo "Failsafe file found. iptables rules flushed."
+    iptables -F
+    exit 1;
+fi

@@ -1,0 +1,7 @@
+- import_tasks: upgrade-pkgs.yml
+  become: true
+- import_tasks: configure-sshd.yml
+  become: true
+- import_tasks: "{{ hvps_firewall_type }}.yml"
+  become: true
+  when: hvps_firewall == true and ansible_distribution == 'Debian'

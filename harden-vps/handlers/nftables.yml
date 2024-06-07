@@ -1,0 +1,11 @@
+- name: flush nftables
+  command: "nft flush ruleset"
+
+- name: apply nftables
+  command: "nft -f /etc/nftables.conf"
+
+- name: enable/restart nftables
+  systemd:
+    name: nftables.service
+    enabled: true
+    state: restarted

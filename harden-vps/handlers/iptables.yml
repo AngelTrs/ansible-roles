@@ -1,0 +1,2 @@
+- name: persist iptables rules
+  shell: "set -o pipefail && iptables-save | tee /etc/iptables/rules.v4"

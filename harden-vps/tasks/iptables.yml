@@ -1,0 +1,58 @@
+- name: failure if not Debian-based OS
+  fail:
+    msg: "Only Debian supported for now"
+  when: ansible_distribution != 'Debian'
+
+- name: install iptables and persistent
+  apt:
+    name:
+      - iptables
+      - iptables-persistent
+    state: present
+
+- name: flush iptables
+  iptables:
+    flush: true
+
+- block:
+    - name: render jinja for custom rules script
+      template:
+        src: iptables-rules.sh.j2
+        dest: /tmp/iptables-rules-{{ hostcode }}.sh
+        mode: 0755
+      delegate_to: localhost
+
+    - name: run custom rules script
+      script: /tmp/iptables-rules-{{ hostcode }}.sh
+      register: verification
+      changed_when: verification.rc == 0
+      failed_when: verification.rc == 1
+      notify:
+        - persist iptables rules
+
+    - name: copy custom rules script to remote
+      copy:
+        src: /tmp/iptables-rules-{{ hostcode }}.sh
+        dest: ~/iptables-rules
+        mode: 0664
+      when: verification.rc == 0
+
+  when: hvps_custom_firewall
+
+- block:
+    - name: run generic rules script
+      script: iptables-rules.sh
+      register: verification
+      changed_when: verification.rc == 0
+      failed_when: verification.rc == 1
+      notify:
+        - persist iptables rules
+
+    - name: copy generic rules script to remote
+      copy:
+        src: iptables-rules.sh
+        dest: ~/iptables-rules
+        mode: 0664
+      when: verification.rc == 0
+
+  when: not hvps_custom_firewall

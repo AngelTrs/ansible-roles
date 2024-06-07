@@ -1,0 +1,54 @@
+- name: failure if not Debian-based OS
+  fail:
+    msg: "Only Debian family supported for now"
+  when: ansible_distribution != 'Debian'
+
+- name: get package facts
+  package_facts:
+    manager: auto
+
+- name: flush iptables
+  iptables:
+    flush: true
+  when: "'iptables' in ansible_facts.packages"
+
+- name: remove iptables
+  apt:
+    name:
+      - iptables
+      - iptables-persistent
+    state: absent
+
+- name: install nftables
+  apt:
+    name: nftables
+    state: present
+
+- name: create backup of /etc/nftables.conf
+  copy:
+    src: /etc/nftables.conf
+    dest: /etc/nftables.conf.orig
+    mode: 0644
+    remote_src: true
+
+- name: copy generic rules template to remote
+  template:
+    src: nftables.conf.j2
+    dest: /etc/nftables.conf
+    mode: 0644
+  notify:
+    - flush nftables
+    - apply nftables
+    - enable/restart nftables
+  when: not hvps_custom_firewall
+
+- name: copy custom rules file to remote
+  copy:
+    src: nfttables-rules-{{ hostcode }}.conf
+    dest: /etc/nftables.conf
+    mode: 0644
+  notify:
+    - flush nftables
+    - apply nftables
+    - enable/restart nftables
+  when: hvps_custom_firewall

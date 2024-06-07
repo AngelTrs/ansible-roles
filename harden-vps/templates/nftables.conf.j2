@@ -1,0 +1,30 @@
+#!/usr/sbin/nft -f
+
+flush ruleset
+
+table inet filter {
+	chain input {
+		type filter hook input priority 0; policy drop;
+
+		# accept any localhost traffic
+		iif lo accept
+
+		# ICMP ping dealt with separately to rate limit
+        ip protocol icmp icmp type echo-request limit rate 1/second accept
+        ip protocol icmp icmp type echo-request counter drop
+        ip6 nexthdr icmpv6 icmpv6 type echo-request limit rate 1/second accept
+        ip6 nexthdr icmpv6 icmpv6 type echo-request counter drop
+
+		# accept traffic originated from us
+		ct state established,related accept
+
+		# activate the following line to accept common local services
+		tcp dport { {{ hvps_ssh_port }} } ct state new accept
+
+		# accept neighbour discovery otherwise IPv6 connectivity breaks.
+		ip6 nexthdr icmpv6 icmpv6 type { nd-neighbor-solicit,  nd-router-advert, nd-neighbor-advert } accept
+
+		# count and drop any other traffic
+		counter drop
+	}
+}
