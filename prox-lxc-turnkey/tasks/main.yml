@@ -1,0 +1,29 @@
+- name: Check whether container exists
+  shell: "lxc-ls -f | grep -e {{ container_id }} -e {{ container_ip }}"
+  changed_when: false
+  ignore_errors: true
+  register: lxc_list
+
+- block:
+    - name: create new lxc container
+      command: "{{ pct_create_command }}"
+      register: pct_create
+      changed_when: pct_create.rc == 0
+
+    - name: template inithooks to hypervisor
+      template:
+        src: inithooks.conf.js
+        dest: /tmp/inithooks.conf
+        mode: '0644'
+        force: true
+
+    - name: transfer turnkey inithooks to new container
+      command: |
+        pct push {{ container_id }} /tmp/inithooks.conf /etc/inithooks.conf
+      register: pct_inithooks
+      changed_when: pct_inithooks.rc == 0
+
+    - name: reminder to grab passwords
+      pause:
+        prompt: "make sure to grab passwords from /tmp directory"
+  when: lxc_list.rc != 0
