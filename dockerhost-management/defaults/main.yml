@@ -1,0 +1,3 @@
+setup_for_docker: true
+container_dest: ~/docker-containers
+app_data_dir: /srv/docker-containers
