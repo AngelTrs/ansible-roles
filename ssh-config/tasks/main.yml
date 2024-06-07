@@ -1,0 +1,11 @@
+- name: add host to ssh config
+  community.general.ssh_config:
+    user: "{{ ansible_user_id }}"
+    host: "{{ ssh_hostname }}"
+    hostname: "{{ ssh_ip }}"
+    remote_user: "{{ ssh_user }}"
+    state: present
+- name: remove IP from knownhosts file
+  known_hosts:
+    name: "{{ ssh_ip }}"
+    state: absent
