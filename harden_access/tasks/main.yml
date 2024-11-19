@@ -1,0 +1,25 @@
+- name: Update and upgrade on Debian-based systems
+  apt:
+    update_cache: yes
+    upgrade: yes
+  when: ansible_os_family == "Debian"
+
+- name: Update and upgrade on Red Hat-based systems
+  yum:
+    name: '*'
+    state: latest
+  when: ansible_os_family == "RedHat"
+
+- import_tasks: configure-sshd.yml
+
+- import_tasks: configure-nftables.yml
+  when: 
+    - harden_setup_firewall == true 
+    - ansible_distribution == 'Debian'
+    - ansible_distribution_major_version | int >= 10
+
+- import_tasks: configure-iptables.yml
+  when: 
+    - harden_setup_firewall == true 
+    - ansible_distribution == 'Debian'
+    - ansible_distribution_major_version | int <= 9

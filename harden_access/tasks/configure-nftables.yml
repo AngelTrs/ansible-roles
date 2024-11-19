@@ -40,7 +40,7 @@
     - flush nftables
     - apply nftables
     - enable/restart nftables
-  when: not hvps_custom_firewall
+  when: not harden_custom_firewall_rules
 
 - name: copy custom rules file to remote
   copy:
@@ -51,4 +51,4 @@
     - flush nftables
     - apply nftables
     - enable/restart nftables
-  when: hvps_custom_firewall
+  when: harden_custom_firewall_rules
