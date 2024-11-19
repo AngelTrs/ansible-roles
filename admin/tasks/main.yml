@@ -1,9 +1,8 @@
 - name: check if user exists
   getent:
     database: passwd
-    key: "{{ admin_user_name }}"
+    key: "{{ admin_user }}"
   ignore_errors: true
-  register: user_check
 
 - block: 
     - name: install sudo
@@ -11,15 +10,9 @@
         name: sudo
         state: present
 
-    - name: allow user to have passwordless sudo
-      copy:
-        content: '{{ admin_user_name }} ALL=(ALL) NOPASSWD: ALL'
-        dest: /etc/sudoers.d/{{ admin_user_name }}_nopasswd
-        mode: 0440
-
     - name: create admin user with sudo privileges
       user:
-        name: "{{ admin_user_name }}"
+        name: "{{ admin_user }}"
         groups: >
           {% if ansible_os_family == 'Debian' %}
           sudo
@@ -34,7 +27,7 @@
 
     - name: set authorized key for remote user
       authorized_key:
-        user: "{{ admin_user_name }}"
+        user: "{{ admin_user }}"
         state: present
         key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"
-  when: user_check.failed
+  become: true

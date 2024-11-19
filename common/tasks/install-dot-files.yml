@@ -28,5 +28,3 @@
     version: main
   notify:
     - stow dotfiles
-    - reload systemd
-    - enable update-dotfiles

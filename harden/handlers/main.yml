@@ -4,5 +4,5 @@
     enabled: true
     state: restarted
 
-- include: nftables.yml
-- include: iptables.yml
+- include_tasks: nftables.yml
+- include_tasks: iptables.yml

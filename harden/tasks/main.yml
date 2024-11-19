@@ -1,0 +1,13 @@
+- import_tasks: configure-sshd.yml
+
+- import_tasks: configure-nftables.yml
+  when: 
+    - harden_firewall == true 
+    - ansible_distribution == 'Debian'
+    - ansible_distribution_major_version | int >= 10
+
+- import_tasks: configure-iptables.yml
+  when: 
+    - harden_firewall == true 
+    - ansible_distribution == 'Debian'
+    - ansible_distribution_major_version | int <= 9

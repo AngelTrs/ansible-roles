@@ -11,15 +11,15 @@
     path: /etc/ssh/sshd_config
     state: present
     regexp: '^#?Port'
-    line: "Port {{ hvps_ssh_port }}"
+    line: "Port {{ harden_ssh_port }}"
   notify: Restart SSHD
 
-- name: Disable password authentication for root
+- name: Disable root login via SSH
   lineinfile:
     path: /etc/ssh/sshd_config
     state: present
     regexp: '^#?PermitRootLogin'
-    line: 'PermitRootLogin prohibit-password'
+    line: 'PermitRootLogin no'
   notify: Restart SSHD
 
 - name: Disable password authentication
