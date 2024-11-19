@@ -1,0 +1,39 @@
+---
+- name: check (or create) app-data directory
+  file:
+    path: "{{ compose_app_data_dir }}"
+    state: directory
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_id }}"
+  become: true
+    
+- name: add DOCKER_APP_DATA env to .profile
+  lineinfile:
+    path: ~/.profile
+    line: "export DOCKER_APP_DATA='{{ compose_app_data_dir }}'"
+    state: present
+
+- name: Find existing docker-compose directories
+  find:
+    paths: "{{ compose_container_dir }}"
+    patterns: docker-compose.yml
+    recurse: yes
+  register: existing_compose
+
+- name: Run docker-compose down on each directory
+  community.docker.docker_compose_v2:
+    project_src: "{{ item.path | dirname }}"
+    state: absent
+  loop: "{{ existing_compose.files }}"
+  
+- name: Delete existing docker-compose directories
+  file: 
+    path: "{{ item.path | dirname }}"
+    state: absent
+  loop: "{{ existing_compose.files }}"
+
+- name: include tasks for each compose project
+  include_tasks: compose_project.yml
+  loop: "{{ compose_projects }}"
+  loop_control:
+    loop_var: current_project

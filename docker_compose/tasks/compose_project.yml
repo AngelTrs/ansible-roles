@@ -1,0 +1,29 @@
+- name: copy compose file
+  copy:
+    src: compose-files/{{ current_project }}/
+    dest: "{{ compose_container_dir }}/{{ current_project }}"
+    force: true
+
+- name: pull images
+  community.docker.docker_compose_v2_pull:
+    project_src: "{{ compose_container_dir }}/{{ current_project }}"
+
+- name: start services
+  command:
+    cmd: docker-compose up -d --remove-orphans
+    chdir: "{{ compose_container_dir }}/{{ current_project }}"
+
+- name: start services definded in the docker compose file
+  community.docker.docker_compose_v2:
+    project_src: "{{ compose_container_dir }}/{{ current_project }}"
+    state: present
+
+- name: Prune unused Docker images and containers
+  command: docker system prune -af
+  register: prune_output
+  ignore_errors: yes
+  changed_when: '"deleted" in result.stdout'
+
+- name: Display prune output
+  debug:
+    var: prune_output.stdout_lines
