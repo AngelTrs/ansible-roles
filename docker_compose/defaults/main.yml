@@ -1,2 +1,1 @@
 compose_container_dir: ~/docker-containers
-compose_app_data_dir: /srv/docker-containers

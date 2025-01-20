@@ -1,29 +1,28 @@
-- name: copy compose file
-  copy:
+- name: Copy compose file
+  ansible.builtin.copy:
     src: compose-files/{{ current_project }}/
     dest: "{{ compose_container_dir }}/{{ current_project }}"
     force: true
 
-- name: pull images
+- name: Pull images
   community.docker.docker_compose_v2_pull:
     project_src: "{{ compose_container_dir }}/{{ current_project }}"
+  environment:
+    DOCKER_APP_DATA: "{{ compose_app_data_dir }}"
 
-- name: start services
-  command:
-    cmd: docker-compose up -d --remove-orphans
-    chdir: "{{ compose_container_dir }}/{{ current_project }}"
-
-- name: start services definded in the docker compose file
+- name: Start services definded in the docker compose file
   community.docker.docker_compose_v2:
     project_src: "{{ compose_container_dir }}/{{ current_project }}"
     state: present
+  environment:
+    DOCKER_APP_DATA: "{{ compose_app_data_dir }}"
 
 - name: Prune unused Docker images and containers
-  command: docker system prune -af
+  ansible.builtin.command: docker system prune -af
   register: prune_output
-  ignore_errors: yes
+  ignore_errors: true
   changed_when: '"deleted" in result.stdout'
 
 - name: Display prune output
-  debug:
+  ansible.builtin.debug:
     var: prune_output.stdout_lines
