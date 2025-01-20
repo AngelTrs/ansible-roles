@@ -1,0 +1,68 @@
+---
+# Streambox does not allow access to ansible-facts, therefore sb_user must
+# be explicitly stated.
+
+- name: add export lines to .profile file
+  lineinfile:
+    path: "/home/{{ sb_user }}/.profile"
+    line: "{{ item }}"
+    insertafter: EOF
+  loop:
+    - "export NMEDIA=$HOME/media"
+    - "export NDOWNLOADS=$HOME/torrents/qbittorrent"
+
+- name: copy .bash_aliases file to remote host
+  copy:
+    src: bash_aliases
+    dest: "/home/{{ sb_user }}/.bash_aliases"
+    owner: "{{ sb_user }}"
+    group: "{{ sb_user }}"
+    mode: '0644'
+
+- name: copy .vimrc file to remote host
+  copy:
+    src: vimrc
+    dest: "/home/{{ sb_user }}/.vimrc"
+    owner: "{{ sb_user }}"
+    group: "{{ sb_user }}"
+    mode: '0644'
+
+- name: add SSH public key of nextpvr instance to authorized_keys
+  ansible.posix.authorized_key:
+    user: "{{ sb_user }}"
+    key: "{{ lookup('file', 'files/penn_id_rsa.pub') }}"
+    state: present
+
+- name: qbittorrent post-processing script
+  block:
+    - name: create local bin directory
+      file:
+        path: "/home/{{ sb_user }}/.local/bin/qbt/"
+        state: directory
+        mode: '0755'
+    - name: copy script to remote host
+      copy:
+        src: "{{ ansible_host }}/qbt-on-complete"
+        dest: "/home/{{ sb_user }}/.local/bin/qbt/on-complete.sh"
+        owner: "{{ sb_user }}"
+        group: "{{ sb_user }}"
+        mode: '0755'
+      register: script_result
+
+    - name: set qbittorrent setting
+      pause:
+        prompt: |
+          Add the following command to qbittorrent via settings in the ui:
+            `/home/{{ sb_user }}/.local/bin/qbt/on-complete.sh "%N" "%F" "%L" "%T" "%I"`
+          Press ENTER to continue
+      when: script_result.changed
+  when:
+    - lookup('file', 'files/{{ ansible_host }}/qbt-on-complete',
+      errors='ignore')
+
+- name: import ffpvr
+  import_tasks: ffpvr.yml
+  when: sb_install_ffpvr
+
+- name: Import cross-seed task
+  import_tasks: cross-seed.yml

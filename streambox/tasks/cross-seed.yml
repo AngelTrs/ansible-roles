@@ -1,0 +1,61 @@
+---
+- name: Check if nvm install directory exists
+  stat:
+    path: "/home/{{ sb_user }}/.nvm"
+  register: dir_check_nvm
+
+- name: Run nvm installation script from curl
+  shell: |
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+  when: not dir_check_nvm.stat.exists
+
+- name: Check if npm install directory exists
+  stat:
+    path: /home/{{ sb_user }}/.npm
+  register: dir_check_npm
+
+- name: Install Node.js using NVM
+  shell: |
+    export NVM_DIR="/home/{{ sb_user }}/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    nvm install node
+  when: not dir_check_npm.stat.exists
+
+- name: Check if cross-seed install directory exists
+  stat:
+    path: "/home/{{ sb_user }}/.cross-seed"
+  register: dir_check_cs
+
+- name: run npm install cross-seed
+  shell: |
+    export NVM_DIR="/home/{{ sb_user }}/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    npm install -g cross-seed
+  when: not dir_check_cs.stat.exists
+  register: cs_install
+
+- name: setup cross-seed config
+  block:
+    - name: generate new cross-seed config
+      shell: |
+        export NVM_DIR="/home/{{ sb_user }}/.nvm"
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+        cross-seed gen-config
+
+    - name: copy original cross-seed config
+      copy:
+        src: "/home/{{ sb_user }}/.cross-seed/config.js"
+        dest: "/home/{{ sb_user }}/.cross-seed/config.js.orig"
+        remote_src: true
+
+    - name: copy custom cross-seed config to remote host
+      copy:
+        src: "{{ ansible_host }}/cross-seed_config.js"
+        dest: "/home/{{ sb_user }}/.cross-seed/config.js"
+
+    - name: create cross-seed output directory
+      file:
+        path: "/home/{{ sb_user }}/.local/share/qBittorrent/BT_cross-seed"
+        state: directory
+        mode: '0755'
+  when: cs_install.changed

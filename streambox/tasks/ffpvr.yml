@@ -1,0 +1,26 @@
+---
+- name: create local bin directory
+  file:
+    path: "/home/{{ sb_user }}/.local/bin"
+    state: directory
+    mode: '0755'
+
+- name: copy ffpvr scripts to remote host
+  copy:
+    src: "{{ ansible_host }}/{{ item }}"
+    dest: "/home/{{ sb_user }}/.local/bin/{{ item }}.sh"
+    owner: "{{ sb_user }}"
+    group: "{{ sb_user }}"
+    mode: '0755'
+  with_items:
+    - ffpvr
+    - auto-ffpvr
+
+- name: Create cron job to run auto-ffpvr command
+  cron:
+    name: "encode nextpvr recordings"
+    user: "{{ sb_user }}"  # Replace with the appropriate user
+    minute: "0"
+    hour: "5,17"           # Runs at 5 AM and 5 PM
+    job: '/home/{{ sb_user }}/.local/bin/auto-ffpvr.sh'
+    state: present
