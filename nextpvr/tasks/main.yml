@@ -1,0 +1,55 @@
+- name: Create nextpvr directory
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - "{{ ansible_env.HOME }}/nextpvr/buffer"
+    - "{{ ansible_env.HOME }}/nextpvr/recordings"
+
+- name: Include docker_compose role for nextpvr
+  ansible.builtin.include_role:
+    name: docker_compose
+  vars:
+    compose_projects:
+      - nextpvr
+
+- block:
+    - name: Add streambox to ssh config
+      ansible.builtin.blockinfile:
+        path: "{{ ansible_env.HOME }}/.ssh/config"
+        block: |
+          Host streambox
+            hostname {{ streambox.hostname }}
+            user {{ streambox.user }}
+
+    - name: Create local bin directory
+      ansible.builtin.file:
+        path: "{{ ansible_env.HOME }}/.local/bin/cron/"
+        state: directory
+        mode: '0755'
+
+    - name: Write nextpvr-rsync script
+      ansible.builtin.copy:
+        content: |
+          #! /bin/bash
+          rsync -avz --remove-source-files '{{ ansible_env.HOME }}/nextpvr/recordings/.transfer/' 'streambox:~/ffpvr/input/'
+        dest: "{{ ansible_env.HOME }}/.local/bin/cron/nextpvr-rsync.sh"
+        mode: '0755'
+
+    - name: Create cron job to run sync script
+      ansible.builtin.cron:
+        name: "sync nextpvr recordings to streambox"
+        minute: "0"
+        hour: "1"
+        job: '{{ ansible_env.HOME }}/.local/bin/cron/nextpvr-rsync.sh'
+        state: present
+
+- name: Copy nextpvr post-scripts
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "{{ compose_app_data_dir }}/nextpvr/config/scripts/"
+    mode: '0755'
+  loop:
+    - PostProcessing.sh
+    - PostCancel.sh
