@@ -1,4 +1,4 @@
-- name: stow dotfiles
-  command:
+- name: Stow Dotfiles
+  ansible.builtin.command:
     cmd: stow -R --no-folding bash neovim
     chdir: ~/.dotfiles/

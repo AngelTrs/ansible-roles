@@ -1,30 +1,33 @@
-- name: check for .dotfiles directory
-  file:
+- name: Check For Dotfiles Directory
+  ansible.builtin.file:
     path: ~/.dotfiles/
     state: directory
-    mode: 0755
+    mode: '0755'
   register: dot_result
 
-- name: install dotfiles
+- name: Prepare for Dotfiles Installation
+  when: dot_result.changed
   block:
-    - name: remove original .bashrc file
-      file:
-        path: ~/.bashrc
-        state: absent
+    - name: Backup Original Bash Config Files
+      ansible.builtin.command: mv {{ item }} {{ item }}.orig
+      loop:
+        - "~/.bash_aliases"
+        - "~/.bashrc"
+        - "~/.profile"
+      ignore_errors: true
 
-    - name: Make config directory
-      file:
+    - name: Create Config Directory
+      ansible.builtin.file:
         path: ~/.config
         state: directory
-        mode: 0755
-  when: dot_result.changed == true
+        mode: '0755'
 
-- name: clone dotfile repo
-  git:
+- name: Clone Dotfile Git Repo
+  ansible.builtin.git:
     repo: "{{ dotfile_repo }}"
     dest: ~/.dotfiles/
     clone: true
     update: true
     version: main
   notify:
-    - stow dotfiles
+    - Stow Dotfiles
