@@ -1,8 +1,12 @@
 - name: Restart SSHD
-  systemd:
+  ansible.builtin.systemd:
     name: sshd
     enabled: true
     state: restarted
 
-- include_tasks: nftables.yml
-- include_tasks: iptables.yml
+- name: SSHD Config Change Reminder
+  ansible.builtin.debug:
+    msg:  "SSHD config changed. Reminder to change SSH config on localhost"
+
+- import_tasks: handlers/nftables.yml
+- import_tasks: handlers/iptables.yml

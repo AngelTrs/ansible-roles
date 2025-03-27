@@ -44,7 +44,7 @@
 
 - name: copy custom rules file to remote
   copy:
-    src: nfttables-rules-{{ hostcode }}.conf
+    src: nfttables-rules-{{ harden_hostcode }}.conf
     dest: /etc/nftables.conf
     mode: 0644
   notify:

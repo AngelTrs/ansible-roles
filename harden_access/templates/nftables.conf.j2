@@ -19,7 +19,7 @@ table inet filter {
 		ct state established,related accept
 
 		# activate the following line to accept common local services
-		tcp dport { {{ hvps_ssh_port }} } ct state new accept
+		tcp dport { {{ harden_ssh_port }} } ct state new accept
 
 		# accept neighbour discovery otherwise IPv6 connectivity breaks.
 		ip6 nexthdr icmpv6 icmpv6 type { nd-neighbor-solicit,  nd-router-advert, nd-neighbor-advert } accept

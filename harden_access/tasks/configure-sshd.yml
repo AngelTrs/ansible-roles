@@ -1,31 +1,37 @@
-- name: Create backup of sshd_config
-  copy:
+- name: Create Backup Of SSHD Config
+  ansible.builtin.copy:
     src: /etc/ssh/sshd_config
     dest: /etc/ssh/sshd_config.orig
-    mode: 0644
+    mode: '0644'
     remote_src: true
     force: false
 
-- name: Change SSH port
-  lineinfile:
+- name: Change SSH Port
+  ansible.builtin.lineinfile:
     path: /etc/ssh/sshd_config
     state: present
     regexp: '^#?Port'
     line: "Port {{ harden_ssh_port }}"
-  notify: Restart SSHD
+  notify:
+    - Restart SSHD
+    - SSHD Config Change Reminder
 
-- name: Disable root login via SSH
-  lineinfile:
+- name: Disable Root Login Via SSH
+  ansible.builtin.lineinfile:
     path: /etc/ssh/sshd_config
     state: present
     regexp: '^#?PermitRootLogin'
     line: 'PermitRootLogin no'
-  notify: Restart SSHD
+  notify:
+    - Restart SSHD
+    - SSHD Config Change Reminder
 
-- name: Disable password authentication
-  lineinfile:
+- name: Disable Password Authentication
+  ansible.builtin.lineinfile:
     path: /etc/ssh/sshd_config
     state: present
     regexp: '^#?PasswordAutnetication'
     line: 'PasswordAuthentication no'
-  notify: Restart SSHD
+  notify:
+    - Restart SSHD
+    - SSHD Config Change Reminder
