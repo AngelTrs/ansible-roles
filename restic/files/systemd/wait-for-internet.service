@@ -1,0 +1,12 @@
+[Unit]
+Description=Wait for internet connectivity (google.com)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'until ping -c1 google.com && exit 0; do sleep 5; done;'
+TimeoutStartSec=300
+
+[Install]
+WantedBy=multi-user.target

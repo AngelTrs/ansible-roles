@@ -1,10 +1,11 @@
 [Unit]
-Description=restic forget and prune
-After=network.target
+Description=Restic Forget and Prune Backup Repo
+After=wait-for-internet.service
+Requires=wait-for-internet.service
 
 [Service]
-Type=simple
+Type=exec
 ExecStart=/opt/restic/restic-helper prune
 
 [Install]
-WantedBy=default.target
+WantedBy=multi-user.target

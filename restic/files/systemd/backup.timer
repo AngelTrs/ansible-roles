@@ -1,6 +1,5 @@
 [Unit]
-Description=run Restic backup script daily
-After=network.target
+Description=run Restic Backup Service daily
 
 [Timer]
 OnCalendar=*-*-* 03:00:00

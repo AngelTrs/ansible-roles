@@ -1,90 +1,119 @@
-- name: install restic program
-  apt:
-    name: restic
+- name: Install apt requirements
+  ansible.builtin.apt:
+    name: "{{ item }}"
     state: present
     update-cache: true
+  with_items:
+    - restic
+    - python3-pexpect
   become: true
 
-- name: check if restic-helper script is installed
-  stat:
+- name: Check if restic-helper is installed
+  ansible.builtin.stat:
     path: /opt/restic/restic-helper
   register: result
 
-- name: proceed with restic-helper installation
+- name: Install restic-helper root files
+  when: not result.stat.exists
+  become: true
   block:
-    - name: copy script
-      copy:
+    - name: Copy script
+      ansible.builtin.copy:
         src: restic-helper
         dest: /opt/restic/
-        mode: '744'
+        mode: '0744'
 
-    - name: create cache directory
-      file:
+    - name: Create cache directory
+      ansible.builtin.file:
         path: /opt/restic/cache
         state: directory
+        mode: '0755'
 
-    - name: create config directory
-      file:
+    - name: Create config directory
+      ansible.builtin.file:
         path: /opt/restic/config
         state: directory
+        mode: '0755'
 
-    - name: template environment config
-      template:
+    - name: Template environment config
+      ansible.builtin.template:
         src: environment.sh.j2
         dest: /opt/restic/config/environment.sh
+        mode: '0644'
 
-    - name: template backup.files config
-      template:
+    - name: Template backup.files config
+      ansible.builtin.template:
         src: backup.files.j2
         dest: /opt/restic/config/backup.files
+        mode: '0644'
 
-    - name: template exclude.files config
-      template:
+    - name: Template exclude.files config
+      ansible.builtin.template:
         src: exclude.files.j2
         dest: /opt/restic/config/exclude.files
+        mode: '0644'
 
-    - name: add ssh config
-      blockinfile:
+    - name: Copy systemd unit files
+      ansible.builtin.copy:
+        src: systemd/
+        dest: /etc/systemd/system
+        mode: '0644'
+
+    - name: Force systemd to reread configs systemd
+      ansible.builtin.systemd:
+        daemon_reload: true
+
+    - name: Enable backup.timer unit
+      ansible.builtin.systemd:
+        name: backup.timer
+        state: started
+        enabled: true
+
+    - name: Enable backup-prune.timer unit
+      ansible.builtin.systemd:
+        name: backup-prune.timer
+        state: started
+        enabled: true
+
+    - name: Add ssh config
+      ansible.builtin.blockinfile:
         path: ~/.ssh/config
         create: true
-        mode: 0600
+        mode: '0600'
         block: |
           Host {{ restic_ssh_host }}
                Hostname {{ restic_ssh_hostname }}
                User {{ restic_ssh_user }}
                Port {{ restic_ssh_port }}
 
-    - name: initialize restic repo
-      expect:
+    - name: Generate SSH key pair
+      community.crypto.openssh_keypair:
+        path: ~/.ssh/id_rsa
+        type: rsa
+        size: 2048
+        force: false
+      register: ssh_key
+
+    - name: Display public key for manual copying
+      ansible.builtin.debug:
+        msg: |
+          The public key has been generated. Please copy it to the remote host's authorized_keys file.
+          Public Key:
+          {{ ssh_key.public_key }}
+
+    - name: Pause for manual key copying
+      ansible.builtin.pause:
+        prompt: "Press Enter once you have copied the public key to the remote host's authorized_keys file."
+
+    - name: Verify SSH access (optional)
+      ansible.builtin.command:
+        cmd: "ssh -o StrictHostKeyChecking=no {{ restic_ssh_host }} echo 'SSH connection successful'"
+      ignore_errors: true
+
+    - name: Initialize restic repo
+      ansible.builtin.expect:
         command: restic -r sftp:{{ restic_ssh_host }}:{{ restic_repo }} init
         responses:
           "enter password for new repository:": "{{ restic_pass }}"
           "enter password again:": "{{ restic_pass }}"
       no_log: true
-  become: true
-  when: not result.stat.exists
-
-- name: copy systemd unit files
-  copy:
-    src: systemd/
-    dest: /etc/systemd/system
-  become: true
-
-- name: force systemd to reread configs
-  systemd:
-    daemon_reload: true
-  become: true
-
-- name: enable backup.timer unit
-  systemd:
-    name: backup.timer
-    state: started
-    enabled: true
-  become: true
-
-- name: enable backup-prune.timer unit
-  systemd:
-    name: backup-prune.timer
-    state: started
-    enabled: true
-  become: true

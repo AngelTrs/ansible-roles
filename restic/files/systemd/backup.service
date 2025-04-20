@@ -1,10 +1,11 @@
 [Unit]
-Description=restic backup
-After=network.target
+Description=Restic Backup Service
+After=wait-for-internet.service
+Requires=wait-for-internet.service
 
 [Service]
-Type=simple
+Type=exec
 ExecStart=/opt/restic/restic-helper run --auto
 
 [Install]
-WantedBy=default.target
+WantedBy=multi-user.target
